@@ -1,4 +1,8 @@
 ﻿using System.Collections.Generic;
+using System.Data;
+using System.IO;
+using CSVEndpoint.Services;
+using CSVEndpoint_API.Services;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 
@@ -8,33 +12,27 @@ namespace CSVEndpoint.Controllers
     [ApiController]
     public class CSVUploadController : ControllerBase
     {
-        private readonly IWebHostEnvironment _webHostEnvironment;
+        private readonly CSVDataProcessorInterface _CSVDataProcessorInterface;
 
-        public CSVUploadController(IWebHostEnvironment webHostEnvironment)
+        public CSVUploadController(CSVDataProcessorInterface csvProcessor)
         {
-            _webHostEnvironment = webHostEnvironment;
+            _CSVDataProcessorInterface = csvProcessor;
         }
+
+
         [HttpPost("[action]")]
         public IActionResult UploadFile(IFormFile file)
         {
             if (file == null || file.Length == 0)
                 return BadRequest();
 
-            if (Path.GetExtension(file.FileName).ToLower() != ".csv")
-                return BadRequest("Only CSV files are allowed.");
+            using(var stream = file.OpenReadStream())
+        {
+                DataTable dt = _CSVDataProcessorInterface.CsvToDataTable(stream);
+            }
 
-            string directoryPath = Path.Combine(_webHostEnvironment.ContentRootPath, "UploadedFiles");
-            Directory.CreateDirectory(directoryPath);
+            return Ok("CSV processed and pivoted table logged to the terminal.");
 
-           
-            string filePath = Path.Combine(directoryPath, file.FileName);
-            using (var stream = new FileStream(filePath, FileMode.Create))
-                {
-                    file.CopyTo(stream);
-                }
-            
-              return Ok();
-            
         }
     }
 }

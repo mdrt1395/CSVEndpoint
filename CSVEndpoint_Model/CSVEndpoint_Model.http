@@ -1,0 +1,6 @@
+@CSVEndpoint_Model_HostAddress = http://localhost:5259
+
+GET {{CSVEndpoint_Model_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###

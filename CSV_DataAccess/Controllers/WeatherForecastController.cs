@@ -1,6 +1,6 @@
 using Microsoft.AspNetCore.Mvc;
 
-namespace CSVEndpoint.Controllers
+namespace CSV_DataAccess.Controllers
 {
     [ApiController]
     [Route("[controller]")]
