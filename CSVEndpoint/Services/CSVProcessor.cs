@@ -5,18 +5,20 @@ namespace CSVEndpoint.Services
 {
     public class CSVProcessor: CSVDataProcessorInterface
     {
-        public DataTable CsvToDataTable(Stream cvsStream, string cveLayout)
+        public DataTable CsvToDataTable(Stream cvsStream, string fileName)
         {
             //to-do: metadata table CON STORED PROCEDURE (investigar lo de INSERT) como mandar a llamar SP desde .NET (USAR DATATABLE COMO PARÁMETRO) 
             DataTable dt = new DataTable();
-            dt.Columns.Add("ID_ROW"); //agarrar posición del renglón en el file y agregar a la fila
-            dt.Columns.Add("CVE_LAYOUT"); //nombre del archivo o algo que lo identifique SE SOLICITA a quien sube
+            
+            dt.Columns.Add("CVE_LAYOUT", typeof(string)); //Nombre o identificador del archivo. Se solicita desde el endpoint a quien sube el CVS.
+            dt.Columns.Add("ID_ROW", typeof(int)); //Toma la posición del renglón en el archivo CSV y lo agrega a la fila
             dt.Columns.Add("Field", typeof(string));
             dt.Columns.Add("Value", typeof(string));
             using (var reader = new StreamReader(cvsStream))
             {
                 bool isHeader = true;
                 string[] headers = null;
+                int rowIndex = 0;
 
                 while (!reader.EndOfStream) 
                 {
@@ -31,6 +33,8 @@ namespace CSVEndpoint.Services
                     }
                     else
                     {
+                        rowIndex++;
+
                         if (headers.Length != values.Length)
                         {
                             throw new Exception("CSV row column count does not match header count.");
@@ -38,12 +42,12 @@ namespace CSVEndpoint.Services
 
                         for (int i = 0; i < headers.Length; i++)
                         {
-                            dt.Rows.Add(headers[i], values[i]);
+                            dt.Rows.Add(fileName, rowIndex ,headers[i], values[i]);
                         }
                     }
                 }
             }
-            LogActualDt(dt);
+            //LogActualDt(dt);
             return dt;
         }
         private void LogActualDt(DataTable dt)

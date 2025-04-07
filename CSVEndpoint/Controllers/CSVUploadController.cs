@@ -21,14 +21,16 @@ namespace CSVEndpoint.Controllers
 
 
         [HttpPost("[action]")]
-        public IActionResult UploadFile(IFormFile file)
+        public IActionResult UploadFile(IFormFile file, [FromForm] string fileName)
         {
             if (file == null || file.Length == 0)
                 return BadRequest();
 
-            using(var stream = file.OpenReadStream())
+            string finalFileName = string.IsNullOrWhiteSpace(fileName) ? file.FileName : fileName;
+
+            using (var stream = file.OpenReadStream())
         {
-                DataTable dt = _CSVDataProcessorInterface.CsvToDataTable(stream);
+                DataTable dt = _CSVDataProcessorInterface.CsvToDataTable(stream, file.FileName);
             }
 
             return Ok("CSV processed and pivoted table logged to the terminal.");
