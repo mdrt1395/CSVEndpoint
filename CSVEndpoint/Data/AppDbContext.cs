@@ -7,7 +7,7 @@ namespace CSVEndpoint.Data
     {
         public AppDbContext(DbContextOptions<AppDbContext> options) : base(options) { }
         public AppDbContext() { }
-        public DbSet<CVSMetadataModel> CSVMetadataModel { get; set; }  
+        public DbSet<CVSMetadataModel> csv_metadata_model { get; set; }  
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
