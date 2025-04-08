@@ -3,10 +3,12 @@
     public class CVSMetadataModel
     {
         public int Id { get; set; }
-        public int LayoutId { get; set; }
+        public string CveLayout { get; set; }
         public int TotalColumns { get; set; }
         public int TotalRows { get; set; }
-        public DateTime CreationDate { get; set; }
+        public string CveCreator { get; set; }
+        public DateTime UploadDate { get; set; } = DateTime.UtcNow;
+
 
     }
 }

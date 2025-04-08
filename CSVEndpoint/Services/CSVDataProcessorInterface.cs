@@ -4,6 +4,6 @@ namespace CSVEndpoint_API.Services
 {
     public interface CSVDataProcessorInterface
     {
-        DataTable CsvToDataTable (Stream cvsStream, string fileName);
+        (DataTable, int, int) CsvToDataTable (Stream cvsStream, string cveLayout, string cveCreator);
     }
 }

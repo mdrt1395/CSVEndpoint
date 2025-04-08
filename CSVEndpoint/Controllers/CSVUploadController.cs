@@ -21,16 +21,20 @@ namespace CSVEndpoint.Controllers
 
 
         [HttpPost("[action]")]
-        public IActionResult UploadFile(IFormFile file, [FromForm] string fileName)
+        public IActionResult UploadFile(IFormFile file, [FromForm] string cveLayout, [FromForm] string cveCreator)
         {
             if (file == null || file.Length == 0)
                 return BadRequest();
 
-            string finalFileName = string.IsNullOrWhiteSpace(fileName) ? file.FileName : fileName;
+            if (string.IsNullOrWhiteSpace(cveLayout))
+                return BadRequest("File name is required.");
+
+            if (string.IsNullOrWhiteSpace(cveCreator))
+                return BadRequest("Uploader's name is required.");
 
             using (var stream = file.OpenReadStream())
         {
-                DataTable dt = _CSVDataProcessorInterface.CsvToDataTable(stream, file.FileName);
+                (DataTable, int, int) dt = _CSVDataProcessorInterface.CsvToDataTable(stream, cveLayout, cveCreator);
             }
 
             return Ok("CSV processed and pivoted table logged to the terminal.");
