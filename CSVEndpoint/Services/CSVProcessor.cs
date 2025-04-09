@@ -23,7 +23,7 @@ namespace CSVEndpoint.Services
         {
             DataTable dt = new DataTable();
             
-            dt.Columns.Add("CVE_LAYOUT", typeof(string));
+            dt.Columns.Add("csv_id", typeof(int));
             dt.Columns.Add("Field", typeof(string));
             dt.Columns.Add("Value", typeof(string));
 
@@ -39,7 +39,7 @@ namespace CSVEndpoint.Services
                 {
                     string line = reader.ReadLine();
                     if(string.IsNullOrEmpty(line) ) continue;
-                    string[] values = line.Split(',');
+                    string[] values = line.Split(';');
                     
                     if (isHeader)
                     {
@@ -58,7 +58,7 @@ namespace CSVEndpoint.Services
 
                         for (int i = 0; i < headers.Length; i++)
                         {
-                            dt.Rows.Add(cveLayout, headers[i], values[i]);
+                            dt.Rows.Add(DBNull.Value, headers[i], values[i]);
                         }
                     }
                 }
@@ -67,14 +67,19 @@ namespace CSVEndpoint.Services
             _context.Database.ExecuteSqlRaw("EXEC InsertCSVMetadata @p0, @p1, @p2, @p3",
             cveLayout, totalColumns, totalRows, cveCreator);
 
-            return (dt, totalColumns, totalRows);
-
             int csvId = _context.csv_metadata_model
                 .OrderByDescending(m => m.Id)
                 .Select(m => m.Id)
                 .FirstOrDefault();
 
+            foreach (DataRow row in dt.Rows)
+            {
+                row["csv_id"] = csvId;
+            }
+
             SaveCSVDataToDatabase(dt, csvId);
+
+            return (dt, totalColumns, totalRows);
 
         }
 
@@ -84,6 +89,8 @@ namespace CSVEndpoint.Services
             {
                 try
                 {
+                    Console.WriteLine("Attempting to execute stored procedure InsertCSVData...");
+
                     using (SqlConnection conn = new SqlConnection(_connectionString))
                     {
                         conn.Open();
@@ -101,17 +108,22 @@ namespace CSVEndpoint.Services
                                 row["csv_id"] = csvId;
                             }
 
-                            SqlParameter tableParam = cmd.Parameters.AddWithValue("@csv_data", dt);
+                            SqlParameter tableParam = cmd.Parameters.AddWithValue("@CSVData", dt);
                             tableParam.SqlDbType = SqlDbType.Structured;
-                            tableParam.TypeName = "CSVDataType"; 
+                            tableParam.TypeName = "CSVDataType";
 
-                            cmd.ExecuteNonQuery();
+                            int rowsAffected = cmd.ExecuteNonQuery();
+                            Console.WriteLine($"Stored procedure executed successfully. Rows inserted: {rowsAffected}");
+
+
                         }
                     }
+                    transaction.Commit();
                 }
                 catch (Exception ex)
                 {
-                    Console.WriteLine($"Error inserting CSV data.");
+                    Console.WriteLine($"Error inserting CSV data: {ex.Message} | StackTrace: {ex.StackTrace}");
+                    transaction.Rollback();
                 }
             }
         }
