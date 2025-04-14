@@ -39,7 +39,7 @@ namespace CSVEndpoint.Services
                 {
                     string line = reader.ReadLine();
                     if(string.IsNullOrEmpty(line) ) continue;
-                    string[] values = line.Split(';');
+                    string[] values = line.Split(',');
                     
                     if (isHeader)
                     {
