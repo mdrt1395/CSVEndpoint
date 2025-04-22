@@ -26,9 +26,12 @@ namespace CSVEndpoint.Services
             dt.Columns.Add("csv_id", typeof(int));
             dt.Columns.Add("Field", typeof(string));
             dt.Columns.Add("Value", typeof(string));
+            //dt.Columns.Add("row_num", typeof(int));
+
 
             int totalColumns = 0;
             int totalRows = 0;
+            //int currentRow = 0;
 
             using (var reader = new StreamReader(cvsStream))
             {
@@ -58,8 +61,9 @@ namespace CSVEndpoint.Services
 
                         for (int i = 0; i < headers.Length; i++)
                         {
-                            dt.Rows.Add(DBNull.Value, headers[i], values[i]);
+                            dt.Rows.Add(DBNull.Value, headers[i], values[i] /*currentRow*/);
                         }
+                        //currentRow++;
                     }
                 }
             }
